@@ -10,6 +10,8 @@ const socket = io();
 let userName = '';
 
 socket.on('message', ({ author, content }) => addMessage(author, content));
+socket.on('newUser', ({ author, content }) => addMessage(author, content));
+socket.on('removeUser', ({ author, content }) => addMessage(author, content));
 
 const login = event => {
   event.preventDefault();
@@ -20,6 +22,7 @@ const login = event => {
   } else {
     alert('You have to enter your login');
   }
+  socket.emit('user', userName);
 };
 
 function addMessage(author, content) {
@@ -28,6 +31,9 @@ function addMessage(author, content) {
   message.classList.add('message--received');
   if(author === userName) {
     message.classList.add('message--self');
+  }
+  if(author === 'ChatBot') {
+    message.classList.add('message--chatBot');
   }
   message.innerHTML = `
     <h3 class="message__author">${userName === author ? 'You' : author }</h3>
@@ -39,8 +45,8 @@ function addMessage(author, content) {
 const sendMessage = event => {
   event.preventDefault();
   if (messageContentInput.value.length > 0){
-    addMessage(userName, messageContentInput.value)
-    socket.emit('message', { author: userName, content: messageContentInput.value })
+    addMessage(userName, messageContentInput.value);
+    socket.emit('message', { author: userName, content: messageContentInput.value });
     messageContentInput.value = '';
   } else {
     alert('You have to write Your message');
